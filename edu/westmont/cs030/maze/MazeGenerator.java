@@ -3,9 +3,8 @@
  * CS 030 Project D
  *
  * @author Assistant Professor Mike Ryu mryu@westmont.edu
- * @author Boaty McBoatface bmcboatface@westmont.edu TODO: replace this with your info.
+ * @author Miguel Ortiz mortiz@westmont.edu
  */
-
 
 package edu.westmont.cs030.maze;
 
@@ -26,20 +25,6 @@ public class MazeGenerator {
   private final JTextComponent renderTarget;
   private final int renderDelay;
 
-  /**
-   * Initializes the maze generators with parameters necessary for creating the maze and generating the paths within.
-   *
-   * @param mazeHeight        height of the maze in number of rows
-   *                          (including rows dedicated for displaying internal walls)
-   * @param mazeWidth         width of the maze in number of column
-   *                          (including columns dedicated for displaying internal walls)
-   * @param initRow           index of the row to begin the maze path generation from
-   * @param initCol           index of the column to begin the maze path generation from
-   * @param isShuffle         <code>true</code> if the path generation is randomized,
-   *                          <code>false</code> if the generation should be linear/sequential
-   * @param renderTarget      {@link JTextComponent} to output the rendered maze text to
-   * @param renderDelayMillis milliseconds of delay to inject between each step of maze generation process
-   */
   public MazeGenerator(int mazeHeight, int mazeWidth, int initRow, int initCol,
                        boolean isShuffle, JTextComponent renderTarget, int renderDelayMillis) {
     this.r0 = initRow;
@@ -57,15 +42,53 @@ public class MazeGenerator {
 
   /**
    * Returns the GUI render target that was set at instantiation.
+   *
    * @return A {@link JTextComponent} if the render target was set, <code>null</code> if unset.
    */
   public JTextComponent getRenderTarget() {
     return this.renderTarget;
   }
 
-  // TODO: generateMaze() -- see spec (Javadoc) for details.
+  /**
+   * Initializes the Maze using Maze.initialize() then calls the recursive
+   * generateMaze(Cell) method with the initial Cell from the Maze to begin
+   * the path generation process from.
+   */
+  public void generateMaze() {
+    maze.initialize();
+    Cell start = maze.cells[r0][c0];
+    generateMaze(start);
+  }
 
-  // TODO: generateMaze(Cell currCell)  -- see spec (Javadoc) for details.
+  /**
+   * Recursive maze generation algorithm based on Wikipedia's description.
+   * Steps:
+   * 1. Mark current cell as a path.
+   * 2. Display the maze.
+   * 3. Get neighbors (shuffle if needed).
+   * 4. For each unvisited neighbor:
+   * - Connect origin and neighbor.
+   * - Recurse on neighbor.
+   *
+   * @param currCell current Cell to continue the maze path generation from
+   */
+  public void generateMaze(Cell currCell) {
+    currCell.setPath(true);
+
+    displayMaze(maze);
+
+    ArrayList<Cell> neighbors = maze.getNeighbors(currCell);
+    if (isShuffle) {
+      Collections.shuffle(neighbors);
+    }
+
+    for (Cell n : neighbors) {
+      if (!n.isPath()) {
+        maze.connectNeighbors(currCell, n);
+        generateMaze(n);
+      }
+    }
+  }
 
   /**
    * Displays the given {@link Maze} at its current state to both to the GUI window and console.
@@ -82,5 +105,4 @@ public class MazeGenerator {
     if (this.renderTarget != null) this.renderTarget.setText(maze.toString());
     System.out.println(maze);
   }
-
 }
